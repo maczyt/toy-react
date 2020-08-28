@@ -18,6 +18,9 @@ module.exports = {
     ]
   },
   resolve: {
+    alias: {
+      'react': path.resolve(__dirname, 'src'),
+    }
   },
   plugins: [
   ]

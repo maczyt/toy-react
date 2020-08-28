@@ -1,5 +1,18 @@
-for (let i of [1,2,3]) {
-  console.log(i)
+import { createElement, render, Component } from 'react'
+
+class MyComponent extends Component {
+  render() {
+    return (
+      <div>
+        My Component
+        { this.children }
+      </div>
+    )
+  }
 }
 
-let a = <div />
+render(<MyComponent id="a" class="c">
+  <div>abc</div>
+  <div></div>
+  <div></div>
+</MyComponent>, document.body)
