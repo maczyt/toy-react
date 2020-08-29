@@ -1,4 +1,15 @@
+
 const RENDER_TO_DOM = Symbol('render to dom')
+
+const deepmerge = (oldState, newState) => {
+  for (let p in newState) {
+    if (oldState[p] !== null && typeof oldState[p] === 'object') {
+      deepmerge(oldState[p], newState[p])
+    } else {
+      oldState[p] = newState[p]
+    }
+  }
+}
 
 class ElementWrapper {
   constructor(type) {
@@ -11,8 +22,11 @@ class ElementWrapper {
    */
   setAttribute(name, value) {
     if (name.match(/^on([\s\S]+)$/)) {
-      this.root.addEventListener(RegExp.$1, value)
+      this.root.addEventListener(RegExp.$1.toLowerCase(), value)
     } else {
+      if (name === 'className') {
+        name = 'class'
+      }
       this.root.setAttribute(name, value)
     }
   }
@@ -48,11 +62,12 @@ class TextWrapper {
 }
 
 export class Component {
-  constructor(type) {
+  constructor() {
     this.props = Object.create(null)
     this.children = []
     this._root = null
     this._range = null
+    this.state = {}
   }
 
   setAttribute(name, value) {
@@ -69,6 +84,11 @@ export class Component {
   [RENDER_TO_DOM](range) {
     this._range = range
     this.render()[RENDER_TO_DOM](range)
+  }
+
+  setState(newState) {
+    deepmerge(this.state, newState)
+    this.rerender()
   }
 
   rerender() {
@@ -94,6 +114,7 @@ export function createElement(type, attributes, ...children) {
       if (typeof child === 'string') {
         child = new TextWrapper(child)
       }
+      if (child === null) continue
       if (Array.isArray(child)) {
         insertChildren(child)
       } else {
