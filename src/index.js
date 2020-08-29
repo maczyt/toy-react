@@ -11,63 +11,18 @@ const deepmerge = (oldState, newState) => {
   }
 }
 
-class ElementWrapper {
-  constructor(type) {
-    this.root = document.createElement(type)
-  }
-
-  /**
-   * @param {string} name 
-   * @param {string} value 
-   */
-  setAttribute(name, value) {
-    if (name.match(/^on([\s\S]+)$/)) {
-      this.root.addEventListener(RegExp.$1.toLowerCase(), value)
-    } else {
-      if (name === 'className') {
-        name = 'class'
-      }
-      this.root.setAttribute(name, value)
-    }
-  }
-
-  appendChild(component) {
-    let range = new Range()
-    range.setStart(this.root, this.root.childNodes.length)
-    range.setEnd(this.root, this.root.childNodes.length)
-    component[RENDER_TO_DOM](range)
-  }
-
-  /**
-   * @param {Range} range 
-   */
-  [RENDER_TO_DOM](range) {
-    // range.deleteContents()
-    range.insertNode(this.root)
-  }
-}
-
-class TextWrapper {
-  constructor(content) {
-    this.root = document.createTextNode(content)
-  }
-
-  /**
-   * @param {Range} range 
-   */
-  [RENDER_TO_DOM](range) {
-    // range.deleteContents()
-    range.insertNode(this.root)
-  }
-}
-
 export class Component {
-  constructor() {
+  constructor(type) {
+    this.type = type
     this.props = Object.create(null)
     this.children = []
     this._root = null
     this._range = null
     this.state = {}
+  }
+
+  get vdom() {
+    return this.render().vdom
   }
 
   setAttribute(name, value) {
@@ -96,6 +51,67 @@ export class Component {
     this[RENDER_TO_DOM](this._range)
   }
 }
+
+class ElementWrapper extends Component {
+  constructor(type) {
+    super(type)
+  }
+
+  get vdom() {
+    return this
+  }
+
+  /**
+   * @param {Range} range 
+   */
+  [RENDER_TO_DOM](range) {
+    // range.deleteContents()
+    let root = document.createElement(this.type)
+
+    for (let name in this.props) {
+      let value = this.props[name]
+      if (name.match(/^on([\s\S]+)$/)) {
+        root.addEventListener(RegExp.$1.toLowerCase(), value)
+      } else {
+        if (name === 'className') {
+          name = 'class'
+        }
+        root.setAttribute(name, value)
+      }
+    }
+
+    for (let child of this.children) {
+      let childRange = new Range()
+      childRange.setStart(root, root.childNodes.length)
+      childRange.setEnd(root, root.childNodes.length)
+      child[RENDER_TO_DOM](childRange)
+    }
+
+    range.insertNode(root)
+  }
+}
+
+class TextWrapper extends Component {
+  constructor(content) {
+    super(content)
+    this.content = content
+    this.root = document.createTextNode(content)
+  }
+
+  get vdom() {
+    return this
+  }
+
+  /**
+   * @param {Range} range 
+   */
+  [RENDER_TO_DOM](range) {
+    // range.deleteContents()
+    range.insertNode(this.root)
+  }
+}
+
+
 
 export function createElement(type, attributes, ...children) {
   let e

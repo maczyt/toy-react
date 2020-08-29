@@ -77,13 +77,10 @@ class Game extends Component {
   }
 
   jumpTo(step) {
-    console.log(this.state, step)
     this.setState({
       stepNumber: step,
       xIsNext: (step % 2) === 0
     });
-    console.log(this.state)
-
   }
 
   render() {
@@ -129,6 +126,9 @@ class Game extends Component {
 // ========================================
 
 render(<Game />, document.getElementById("root"));
+
+const game = <Game />
+console.log(game.vdom)
 
 function calculateWinner(squares) {
   const lines = [
