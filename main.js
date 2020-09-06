@@ -124,11 +124,9 @@ class Game extends Component {
 }
 
 // ========================================
-
 render(<Game />, document.getElementById("root"));
 
-const game = <Game />
-console.log(game.vdom)
+console.log(<Game />)
 
 function calculateWinner(squares) {
   const lines = [
@@ -149,3 +147,4 @@ function calculateWinner(squares) {
   }
   return null;
 }
+
